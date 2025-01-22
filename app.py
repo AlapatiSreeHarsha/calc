@@ -1,9 +1,41 @@
 import streamlit as st
-import math
 import numpy as np
 
 # Set Streamlit page configuration
 st.set_page_config(page_title="Scientific Calculator", page_icon="🧮", layout="centered")
+
+# Taylor series expansion for sine
+def sine(x):
+    x = x % 360  # Normalize to 0-360 degrees
+    x = x * (np.pi / 180)  # Convert degrees to radians
+    sin_x = 0
+    term = x  # First term of the series
+    i = 1
+    while abs(term) > 1e-10:  # Continue until terms are small
+        sin_x += term
+        i += 1
+        term *= -1 * x**2 / ((2 * i - 2) * (2 * i - 1))
+    return sin_x
+
+# Taylor series expansion for cosine
+def cosine(x):
+    x = x % 360  # Normalize to 0-360 degrees
+    x = x * (np.pi / 180)  # Convert degrees to radians
+    cos_x = 0
+    term = 1  # First term of the series
+    i = 0
+    while abs(term) > 1e-10:  # Continue until terms are small
+        cos_x += term
+        i += 1
+        term *= -1 * x**2 / ((2 * i - 1) * (2 * i))
+    return cos_x
+
+# Tangent calculation using sine and cosine
+def tangent(x):
+    cos_x = cosine(x)
+    if abs(cos_x) < 1e-10:  # Prevent division by zero
+        return float('inf') if sine(x) > 0 else float('-inf')
+    return sine(x) / cos_x
 
 # Title and Introduction
 st.title("🧮 Scientific Calculator")
@@ -63,22 +95,24 @@ try:
         result = num1 / num2
         st.success(f"The division of {num1} by {num2} is {result}")
     elif operation == "Power":
-        result = math.pow(num1, num2)
+        result = num1**num2
         st.success(f"{num1} raised to the power of {num2} is {result}")
     elif operation == "Square Root":
-        result = math.sqrt(num1)
+        result = num1**0.5
         st.success(f"The square root of {num1} is {result}")
     elif operation == "Logarithm":
-        result = math.log(num1, base)
+        result = np.log(num1) / np.log(base)
         st.success(f"The logarithm of {num1} with base {base} is {result}")
     elif operation == "Trigonometry (sin, cos, tan)":
-        rad = math.radians(angle)
-        sin_val = math.sin(rad)
-        cos_val = math.cos(rad)
-        tan_val = math.tan(rad)
-        st.success(f"sin({angle}) = {sin_val:.4f}")
-        st.success(f"cos({angle}) = {cos_val:.4f}")
-        st.success(f"tan({angle}) = {tan_val:.4f}")
+        sin_val = sine(angle)
+        cos_val = cosine(angle)
+        tan_val = tangent(angle)
+        st.success(f"sin({angle}) = {sin_val:.6f}")
+        st.success(f"cos({angle}) = {cos_val:.6f}")
+        if tan_val == float('inf') or tan_val == float('-inf'):
+            st.warning(f"tan({angle}) is undefined (division by zero).")
+        else:
+            st.success(f"tan({angle}) = {tan_val:.6f}")
     elif operation == "Solve n-th Degree Equation":
         if coefficients:
             coeff_list = [float(c.strip()) for c in coefficients.split(",")]
