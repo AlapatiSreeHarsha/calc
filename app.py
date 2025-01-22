@@ -110,7 +110,7 @@ try:
         st.success(f"sin({angle}) = {sin_val:.6f}")
         st.success(f"cos({angle}) = {cos_val:.6f}")
         if tan_val == float('inf') or tan_val == float('-inf'):
-            st.warning(f"tan({angle}) is undefined (division by zero).")
+            st.success(f"tan({angle}) = {'Infinity' if tan_val > 0 else '-Infinity'}")
         else:
             st.success(f"tan({angle}) = {tan_val:.6f}")
     elif operation == "Solve n-th Degree Equation":
